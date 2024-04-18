@@ -1,4 +1,4 @@
-module github.com/Dr-Lazarus/VirusScanGateway.git
+module github.com/Dr-Lazarus/VirusScanGateway
 
 go 1.21.4
 
