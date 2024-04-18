@@ -23,3 +23,6 @@ go.work
 # Env Files
 .env.dev
 .env.prod
+
+# Test
+test
