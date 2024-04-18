@@ -10,31 +10,44 @@ import (
 	"text/template"
 
 	"github.com/Dr-Lazarus/VirusScanGateway/internal/handler"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/golang-migrate/migrate/v4/source/file" // Ensure this line is exactly as shown
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
+func homeHandler(c *gin.Context) {
 	tmplPath := filepath.Join("web", "templates", "index.html")
 	tmpl, err := template.ParseFiles(tmplPath)
 	if err != nil {
-		http.Error(w, "⚠️ Internal Server Error", 500)
+		c.String(http.StatusInternalServerError, "⚠️ Internal Server Error")
 		return
 	}
 
-	err = tmpl.Execute(w, nil)
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(c.Writer, nil)
 	if err != nil {
-		http.Error(w, "⚠️ Internal Server Error", 500)
+		c.String(http.StatusInternalServerError, "⚠️ Internal Server Error")
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	}
 }
 
@@ -65,23 +78,23 @@ func main() {
 		log.Println("✅ Successfully connected to the database.")
 	}
 
-	if env == "DEV" {
-		if err := runMigrations(connStr); err != nil {
-			log.Fatal("❌ Error running migrations: ", err)
-		}
+	if err := runMigrations(connStr); err != nil {
+		log.Fatal("❌ Error running migrations: ", err)
 	}
+
+	router := gin.Default()
+	router.Use(CORSMiddleware())
+	router.GET("/", homeHandler)
+	router.POST("/upload", handler.UploadHandler)
+	router.Static("/static", "./web/static")
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("❌ $PORT not set")
 	}
 
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/upload", handler.UploadHandler)
 	log.Printf("🚀 Server starting on port %s\n", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal("❌ Server failed to start: ", err)
-	}
+	router.Run(":" + port) // Use Gin to run the server on the correct port
 }
 
 func runMigrations(connStr string) error {
