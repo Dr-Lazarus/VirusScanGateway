@@ -1,24 +1,41 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"text/template"
 
 	"github.com/joho/godotenv"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the Virus Scan Gateway!")
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
+	tmplPath := filepath.Join("../../web", "templates", "index.html")
+	tmpl, err := template.ParseFiles(tmplPath)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+	}
 }
 
 func main() {
-	err := godotenv.Load("../../.env.dev")
+	err := godotenv.Load(".env.dev")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	http.HandleFunc("/", handler)
+
+	http.HandleFunc("/", homeHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
