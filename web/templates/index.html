@@ -1,13 +1,112 @@
-<!-- web/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Virus Scan Gateway</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            margin-bottom: 10px;
+            color: #666;
+            display: block;
+        }
+        input[type="file"] {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+        button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 100px; /* Fixed height for the scrollable box */
+            overflow: auto; /* Makes the box scrollable */
+            white-space: pre-wrap; /* Ensures that the text wraps and preserves whitespace */
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var form = document.getElementById("uploadForm");
+            form.onsubmit = function(event) {
+                event.preventDefault();  // Prevent the form from submitting via the browser.
+
+                var formData = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", form.action, true);
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // On successful upload, display the response.
+                        document.getElementById("response").textContent = "Response: " + xhr.responseText;
+                    } else {
+                        document.getElementById("response").textContent = "Error: " + xhr.statusText;
+                    }
+                };
+
+                xhr.onerror = function () {
+                    document.getElementById("response").textContent = "Error during the request.";
+                };
+
+                xhr.send(formData);
+            };
+        });
+    </script>
 </head>
 <body>
-    <h1>Welcome to the Virus Scan Gateway!</h1>
-    <p>Please use the form to upload files for scanning.</p>
+    <div class="container">
+        <h1>Welcome to the Virus Scan Gateway!</h1>
+        <p>Please use the form to upload files for scanning.</p>
+
+        <!-- Form for file upload -->
+        <form id="uploadForm" action="http://localhost:8080/upload" method="post" enctype="multipart/form-data">
+            <label for="fileUpload">Select a file to upload:</label>
+            <input type="file" id="fileUpload" name="file" required>
+            <button type="submit">Upload File</button>
+        </form>
+
+        <!-- Div to display response in a scrollable box -->
+        <div id="response"></div>
+    </div>
 
 </body>
 </html>
