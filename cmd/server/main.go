@@ -16,7 +16,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmplPath := filepath.Join("../../web", "templates", "index.html")
+	tmplPath := filepath.Join("web", "templates", "index.html")
 	tmpl, err := template.ParseFiles(tmplPath)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
