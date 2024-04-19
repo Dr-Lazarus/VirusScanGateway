@@ -21,7 +21,3 @@ func homeHandler(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "⚠️ Internal Server Error")
 	}
 }
-
-func RegisterHomeRoutes(router *gin.Engine) {
-	router.GET("/", homeHandler)
-}
