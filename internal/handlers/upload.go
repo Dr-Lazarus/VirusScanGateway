@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func UploadHandler(c *gin.Context) {
+func uploadHandler(c *gin.Context) {
 	if c.Request.Method != http.MethodPost {
 		c.String(http.StatusMethodNotAllowed, "Unsupported method")
 		return
@@ -31,7 +31,7 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
-	const maxUploadSize = 10 * 1024 * 1024 // 10 MB
+	const maxUploadSize = 10 * 1024 * 1024
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadSize)
 	err := c.Request.ParseMultipartForm(maxUploadSize)
 	if err != nil {
@@ -82,4 +82,8 @@ func UploadHandler(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, "VirusTotal Response: %s", responseBody)
+}
+
+func RegisterRoutes(router *gin.Engine) {
+	router.GET("/upload", uploadHandler)
 }
