@@ -1,98 +1,142 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Virus Scan Gateway</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body, html {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            height: 100%;
+            width: 100%;
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(ellipse at bottom, #0d1d31 0%, #0c0d13 100%);
+            overflow: hidden;
         }
+
         .container {
-            background: white;
-            padding: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            padding: 40px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             text-align: center;
-            width: 80%;
-            max-width: 500px;
-        }
-        h1 {
             color: #333;
         }
+
+        h1 {
+            margin: 0 0 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
         form {
             margin-top: 20px;
         }
+
         label {
             margin-bottom: 10px;
             color: #666;
             display: block;
+            text-align: left;
         }
+
         input[type="file"] {
             border: 1px solid #ccc;
-            display: inline-block;
+            display: block;
+            width: 100%;
             padding: 6px 12px;
+            margin-bottom: 20px;
             cursor: pointer;
         }
+
         button {
-            background-color: #4CAF50; /* Green */
+            background-color: #008CBA; /* Blue */
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 30px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
             font-size: 16px;
-            margin: 20px 2px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
             cursor: pointer;
             border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        #response {
+
+        button:hover {
+            background-color: #005f73;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+        }
+
+        #response, #countdown {
             margin-top: 20px;
-            padding: 10px;
-            background-color: #f1f1f1;
+            background-color: #fff;
             border: 1px solid #ccc;
             border-radius: 5px;
-            height: 100px; /* Fixed height for the scrollable box */
-            overflow: auto; /* Makes the box scrollable */
-            white-space: pre-wrap; /* Ensures that the text wraps and preserves whitespace */
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Stars background animation */
+        .stars {
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: 747px 1940px #FFF, 916px 1254px #FFF, 522px 679px #FFF, 1661px 698px #FFF, 1616px 126px #FFF, 366px 897px #FFF, 1696px 1993px #FFF, 1606px 1452px #FFF, 177px 1121px #FFF, 1541px 342px #FFF, 1561px 1574px #FFF, 1257px 546px #FFF, 1465px 539px #FFF, 346px 831px #FFF, 347px 178px #FFF, 854px 1486px #FFF, 1861px 1743px #FFF, 588px 1453px #FFF, 528px 42px #FFF, 1604px 1205px #FFF, 271px 1530px #FFF, 1868px 267px #FFF, 128px 53px #FFF, 1740px 1855px #FFF, 1840px 1214px #FFF, 172px 85px #FFF, 137px 1623px #FFF, 443px 1506px #FFF, 986px 1508px #FFF, 1387px 578px #FFF, 1738px 1330px #FFF, 658px 66px #FFF, 1087px 539px #FFF, 931px 883px #FFF, 1119px 1722px #FFF, 1114px 330px #FFF, 259px 1912px #FFF, 1290px 1881px #FFF, 1370px 729px #FFF, 360px 124px #FFF, 1795px 1714px #FFF, 1050px 1532px #FFF, 1409px 1102px #FFF, 1026px 94px #FFF, 373px 295px #FFF, 1617px 1056px #FFF, 134px 1741px #FFF;
+            animation: animStar 50s linear infinite;
+
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+            }
+        }
+
+        @keyframes animStar {
+            from {
+                transform: translateY(0px);
+            }
+            to {
+                transform: translateY(-2000px);
+            }
         }
     </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var form = document.getElementById("uploadForm");
-            form.onsubmit = function(event) {
-                event.preventDefault();  // Prevent the form from submitting via the browser.
-
-                var formData = new FormData(form);
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", form.action, true);
-
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        // On successful upload, display the response.
-                        document.getElementById("response").textContent = "Response: " + xhr.responseText;
-                    } else {
-                        document.getElementById("response").textContent = "Error: " + xhr.statusText;
-                    }
-                };
-
-                xhr.onerror = function () {
-                    document.getElementById("response").textContent = "Error during the request.";
-                };
-
-                xhr.send(formData);
-            };
-        });
-    </script>
 </head>
 <body>
+    <!-- Stars animation container -->
+    <div class="stars"></div>
+
+    <!-- Main container -->
     <div class="container">
         <h1>Welcome to the Virus Scan Gateway!</h1>
         <p>Please use the form to upload files for scanning.</p>
@@ -104,9 +148,74 @@
             <button type="submit">Upload File</button>
         </form>
 
+        <!-- Loading spinner
+        <div id="loadingSpinner" class="loading-spinner hidden"></div> -->
+
         <!-- Div to display response in a scrollable box -->
         <div id="response"></div>
-    </div>
 
+        <!-- Div to display countdown message -->
+        <div id="countdown"></div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var form = document.getElementById("uploadForm");
+            var uploadButton = document.querySelector("button[type='submit']");
+            var countdownElement = document.getElementById("countdown");
+            //var loadingSpinner = document.getElementById("loadingSpinner");
+            var responseElement = document.getElementById("response");
+
+            form.onsubmit = function(event) {
+                event.preventDefault();  // Prevent the form from submitting via the browser.
+
+                responseElement.textContent = ''; // Clear previous response text
+                var formData = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", form.action, true);
+
+                xhr.onloadstart = function () {
+                    // Display loading spinner when request starts
+                    //loadingSpinner.classList.remove("hidden");
+                };
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // On successful upload, display the response.
+                        responseElement.textContent = "Response: " + xhr.responseText;
+                        startCountdown(16);
+                    } else {
+                        responseElement.textContent = "Error: " + xhr.statusText;
+                    }
+                    // Hide loading spinner when request completes
+                    //loadingSpinner.classList.add("hidden");
+                };
+
+                xhr.onerror = function () {
+                    responseElement.textContent = "Error during the request.";
+                    // Hide loading spinner on error
+                    //loadingSpinner.classList.add("hidden");
+                };
+
+                xhr.send(formData);
+            };
+
+            function startCountdown(seconds) {
+                uploadButton.disabled = true;
+                var remainingTime = seconds;
+                countdownElement.textContent = "Please wait " + remainingTime + " seconds...";
+
+                var interval = setInterval(function() {
+                    remainingTime--;
+                    countdownElement.textContent = "Please wait " + remainingTime + " seconds...";
+
+                    if (remainingTime <= 0) {
+                        clearInterval(interval);
+                        uploadButton.disabled = false;
+                        countdownElement.textContent = ""; // Clear countdown message
+                    }
+                }, 1000);
+            }
+        });
+    </script>
 </body>
 </html>
