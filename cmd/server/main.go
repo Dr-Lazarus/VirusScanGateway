@@ -20,7 +20,7 @@ func main() {
 	dbConn := db.SetupDatabase(cfg)
 	defer dbConn.Close()
 
-	handlers.RegisterRoutes(router)
+	handlers.RegisterRoutes(router, dbConn)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("❌ $PORT not set")
