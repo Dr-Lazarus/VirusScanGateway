@@ -21,7 +21,6 @@ func main() {
 	defer dbConn.Close()
 
 	handlers.RegisterRoutes(router)
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("❌ $PORT not set")

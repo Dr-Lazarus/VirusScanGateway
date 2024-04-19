@@ -83,7 +83,3 @@ func uploadHandler(c *gin.Context) {
 
 	c.String(http.StatusOK, "VirusTotal Response: %s", responseBody)
 }
-
-func RegisterRoutes(router *gin.Engine) {
-	router.GET("/upload", uploadHandler)
-}

@@ -22,6 +22,6 @@ func homeHandler(c *gin.Context) {
 	}
 }
 
-func RegisterRoutes(router *gin.Engine) {
+func RegisterHomeRoutes(router *gin.Engine) {
 	router.GET("/", homeHandler)
 }

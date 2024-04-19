@@ -7,6 +7,7 @@ import (
 	"github.com/Dr-Lazarus/VirusScanGateway/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file" // Ensure this line is exactly as shown
 	_ "github.com/lib/pq"
 )
 
@@ -27,7 +28,7 @@ func SetupDatabase(cfg *config.Config) *sql.DB {
 }
 
 func runMigrations(connStr string) {
-	m, err := migrate.New("file://internal/db/migrations", connStr)
+	m, err := migrate.New("file://pkg/database/migrations", connStr)
 	if err != nil {
 		log.Fatal("Error creating migration: ", err)
 	}
