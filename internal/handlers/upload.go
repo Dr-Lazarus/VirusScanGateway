@@ -2,9 +2,13 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/Dr-Lazarus/VirusScanGateway/internal/db"
 	vt "github.com/VirusTotal/vt-go"
@@ -12,33 +16,39 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var (
+	// A map to keep track of SHA256 IDs already being processed
+	processing = make(map[string]bool)
+	mu         sync.Mutex
+)
+
 func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 	log.Println("Handling file upload...")
 
 	if c.Request.Method != http.MethodPost {
-		log.Println("Error: Method not allowed")
+		log.Println("❌ Error: Method not allowed")
 		c.String(http.StatusMethodNotAllowed, "Unsupported method")
 		return
 	}
 
 	if os.Getenv("APP_ENV") == "DEV" {
 		if err := godotenv.Load(".env.dev"); err != nil {
-			log.Printf("Error loading .env.dev file: %v", err)
-			c.String(http.StatusInternalServerError, "Error loading .env.dev file")
+			log.Printf("❌ Error loading .env.dev file: %v", err)
+			c.String(http.StatusInternalServerError, "❌ Error loading .env.dev file")
 			return
 		}
 	}
 
 	apiKey := os.Getenv("VIRUSTOTAL_API_KEY")
 	if apiKey == "" {
-		log.Println("Error: API key is not set")
+		log.Println("❌ Error: API key is not set")
 		c.String(http.StatusInternalServerError, "VirusTotal API key not set")
 		return
 	}
 
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		log.Println("Error retrieving the file")
+		log.Println("❌ Error retrieving the file")
 		c.String(http.StatusBadRequest, "Invalid file upload")
 		return
 	}
@@ -46,14 +56,14 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 
 	analysisURL, err := uploadVirusHandler(file, header.Filename, apiKey)
 	if err != nil {
-		log.Printf("Error uploading to VirusTotal: %v", err)
+		log.Printf("❌ Error uploading to VirusTotal: %v", err)
 		c.String(http.StatusInternalServerError, "Failed to upload file to VirusTotal")
 		return
 	}
 
 	sha256, err := analysisHandler(analysisURL, apiKey)
 	if err != nil {
-		log.Printf("Error extracting SHA256: %v", err)
+		log.Printf("❌ Error extracting SHA256: %v", err)
 		c.String(http.StatusInternalServerError, "Failed to extract SHA256")
 		return
 	}
@@ -61,8 +71,12 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 	client := vt.NewClient(apiKey)
 	vtFile, err := client.GetObject(vt.URL("files/%s", sha256))
 	if err != nil {
-		log.Printf("Failed to retrieve file details: %v", err)
-		c.String(http.StatusInternalServerError, "Failed to retrieve file details")
+		log.Printf("HERE DA BAFOON Failed to retrieve file details: %v", err)
+		if strings.Contains(err.Error(), "not found") {
+			c.String(http.StatusNotFound, "❌ Error Uploading File. Please upload the file again.")
+		} else {
+			c.String(http.StatusInternalServerError, "An error occurred while processing the file. Please try uploading the file again.")
+		}
 		return
 	}
 	report, err := ConvertToVirusTotalReport(vtFile)
@@ -82,8 +96,8 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 				return
 			}
 		} else {
-			log.Printf("Error checking for existing report: %v", err)
-			c.String(http.StatusInternalServerError, "Error checking for existing report")
+			log.Printf("❌ Error checking for existing report: %v", err)
+			c.String(http.StatusInternalServerError, "❌ Error checking for existing report")
 			return
 		}
 	} else {
@@ -94,7 +108,79 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 			return
 		}
 	}
+	if len(report.LastAnalysisResults) == 0 || string(report.LastAnalysisResults) == "{}" {
+		mu.Lock()
+		if processing[sha256] {
+			mu.Unlock()
+			c.JSON(http.StatusOK, gin.H{
+				"message": "Please Hold 🫷, if this is an updated file. Your older file is still being processed.",
+				"sha256":  sha256,
+			})
+			return
+		}
+		// Mark this SHA256 ID as being processed.
+		processing[sha256] = true
+		mu.Unlock()
+		go backgroundWorker(dbConn, apiKey, sha256)
+	}
 
-	c.JSON(http.StatusOK, report)
+	message := fmt.Sprintf(
+		"The file has been uploaded and is now being processed by the Virus Total API.\n"+
+			"Please allow some time for the analysis to complete.\n"+
+			"You can check the status of the report using the provided SHA256 ID: %s\n",
+		sha256,
+	)
 
+	c.String(http.StatusOK, message)
+
+}
+
+func backgroundWorker(dbConn *sql.DB, apiKey, sha256 string) {
+	defer func() {
+		mu.Lock()
+		delete(processing, sha256)
+		mu.Unlock()
+	}()
+
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	client := vt.NewClient(apiKey)
+	// Initialize the attempt counter
+	attemptCounter := 0
+
+	for {
+		select {
+		case <-ticker.C:
+			vtFile, err := client.GetObject(vt.URL("files/%s", sha256))
+			if err != nil {
+				log.Printf("Failed to retrieve file details: %v", err)
+				continue
+			}
+			report, err := ConvertToVirusTotalReport(vtFile)
+			if err != nil {
+				log.Printf("Failed to convert virus total report: %v", err)
+				continue
+			}
+
+			if len(report.LastAnalysisResults) == 0 || string(report.LastAnalysisResults) == "{}" {
+				log.Println("Last analysis results are empty, continuing to poll.")
+				attemptCounter++
+				if attemptCounter >= 2 {
+					log.Printf("Stopping after 2 attempts.")
+					return
+				}
+				continue
+			}
+
+			err = db.UpdateReport(dbConn, report)
+			if err != nil {
+				log.Printf("Failed to update report: %v", err)
+				continue
+			}
+
+			log.Println("Report updated successfully. SHA 256:", report.SHA256)
+			return
+		}
+	}
 }

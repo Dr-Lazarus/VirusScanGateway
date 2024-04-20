@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: VirusScanGatewayDB
+      POSTGRES_USER: cloudsine
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - virusnet
+
+  app:
+    build: .
+    depends_on:
+      - postgres
+    networks:
+      - virusnet
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "postgres://cloudsine:password@postgres:5432/VirusScanGatewayDB?sslmode=disable"
+      APP_ENV: "DEV"
+      VIRUSTOTAL_API_KEY: "eff17d2eb1622b13b0fd93a70488c1e11d7e8248c2752695f63e31d3b30b1201"
+
+networks:
+  virusnet:
+    driver: bridge
+
+volumes:
+  postgres_data:
