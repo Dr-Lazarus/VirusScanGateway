@@ -33,11 +33,11 @@ type VirusTotalReport struct {
 func SetupDatabase(cfg *config.Config) *sql.DB {
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("Error connecting to the database: %v", err)
+		log.Fatalf("❌ Error connecting to the database: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("Error pinging the database: %v", err)
+		log.Fatalf("❌ Error pinging the database: %v", err)
 	}
 
 	log.Println("✅ Successfully connected to the database.")
@@ -49,13 +49,16 @@ func SetupDatabase(cfg *config.Config) *sql.DB {
 func runMigrations(connStr string) {
 	m, err := migrate.New("file://pkg/database/migrations", connStr)
 	if err != nil {
-		log.Fatalf("Error creating migration: %v", err)
+		log.Fatalf("❌ Error creating migration: %v", err)
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("Error applying migration: %v", err)
+	err = m.Up()
+	if err == migrate.ErrNoChange {
+		log.Println("✅ Database synced up")
+	} else if err != nil {
+		log.Fatalf("❌ Error applying migration: %v", err)
+	} else {
+		log.Println("🎉 Database migrated successfully.")
 	}
-
-	log.Println("🎉 Database migrated successfully.")
 }
 
 func InsertReport(db *sql.DB, report *VirusTotalReport) error {
