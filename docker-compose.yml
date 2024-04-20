@@ -13,7 +13,7 @@ services:
       - virusnet
 
   app:
-    build: virusscangateway:v1.0
+    build: .
     depends_on:
       - postgres
     networks:
