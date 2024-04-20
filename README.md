@@ -1,6 +1,3 @@
-Creating a good README is essential for explaining your project and guiding users on how to set it up and use it. Below is a template for a README for your VirusScanGateway project:
-
-````markdown
 # VirusScanGateway
 
 VirusScanGateway is a Go-based web server designed to facilitate the secure uploading and scanning of files for viruses and malware. It integrates with the VirusTotal API to provide real-time scanning results, which are then stored and displayed from a PostgreSQL database.
@@ -68,4 +65,3 @@ Make sure your local environment variables are set according to the `.env.dev` f
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-````
