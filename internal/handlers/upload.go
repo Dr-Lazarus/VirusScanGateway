@@ -17,7 +17,6 @@ import (
 )
 
 var (
-	// A map to keep track of SHA256 IDs already being processed
 	processing = make(map[string]bool)
 	mu         sync.Mutex
 )
@@ -67,11 +66,36 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		c.String(http.StatusInternalServerError, "Failed to extract SHA256")
 		return
 	}
+	reportSQL, err := db.GetReport(dbConn, sha256)
+	if err != nil && err != sql.ErrNoRows {
+		// Handle errors other than "no rows found"
+		log.Printf("❌ Error checking for existing report: %v", err)
+		c.String(http.StatusInternalServerError, "❌ Error checking for existing report")
+		return
+	}
+
+	if err == nil {
+		if len(reportSQL.LastAnalysisResults) == 0 || string(reportSQL.LastAnalysisResults) == "{}" {
+			message := fmt.Sprintf("Report exists in DB but is not yet processed. Please use SHA256 ID to retreive report. SHA256 ID: %s", sha256)
+			c.JSON(http.StatusOK, gin.H{
+				"success": true,
+				"message": message,
+				"sha256":  sha256,
+			})
+		} else {
+			message := fmt.Sprintf("Report already present in DB. Please use SHA256 ID to retreive report. SHA256 ID: %s", sha256)
+			c.JSON(http.StatusOK, gin.H{
+				"success": true,
+				"message": message,
+				"sha256":  sha256,
+			})
+		}
+		return
+	}
 
 	client := vt.NewClient(apiKey)
 	vtFile, err := client.GetObject(vt.URL("files/%s", sha256))
 	if err != nil {
-		log.Printf("HERE DA BAFOON Failed to retrieve file details: %v", err)
 		if strings.Contains(err.Error(), "not found") {
 			c.String(http.StatusNotFound, "❌ Error Uploading File. Please upload the file again.")
 		} else {
@@ -113,12 +137,12 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		if processing[sha256] {
 			mu.Unlock()
 			c.JSON(http.StatusOK, gin.H{
-				"message": "Please Hold 🫷, if this is an updated file. Your older file is still being processed.",
+				"message": "Please Hold 🫷. Your file is still being processed.",
 				"sha256":  sha256,
 			})
 			return
 		}
-		// Mark this SHA256 ID as being processed.
+
 		processing[sha256] = true
 		mu.Unlock()
 		go backgroundWorker(dbConn, apiKey, sha256)

@@ -31,7 +31,6 @@
          gap: 20px;
          padding: 20px;
          }
-
          .container {
          flex: 1;
          min-width: 300px;
@@ -99,36 +98,33 @@
          text-align: left;
          }
          .loading-spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-    display: block; /* Default display */
-}
-
-/* Separate class to hide the element */
-.hidden {
-    display: none;
-}
-.loading-spinner-2 {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-    display: block; /* Default display */
-}
-
-/* Separate class to hide the element */
-.hidden {
-    display: none;
-}
-
+         border: 4px solid rgba(0, 0, 0, 0.1);
+         border-top: 4px solid #3498db;
+         border-radius: 50%;
+         width: 36px;
+         height: 36px;
+         animation: spin 1s linear infinite;
+         margin: 0 auto;
+         display: block; /* Default display */
+         }
+         /* Separate class to hide the element */
+         .hidden {
+         display: none;
+         }
+         .loading-spinner-2 {
+         border: 4px solid rgba(0, 0, 0, 0.1);
+         border-top: 4px solid #3498db;
+         border-radius: 50%;
+         width: 36px;
+         height: 36px;
+         animation: spin 1s linear infinite;
+         margin: 0 auto;
+         display: block; /* Default display */
+         }
+         /* Separate class to hide the element */
+         .hidden {
+         display: none;
+         }
          @keyframes spin {
          0% { transform: rotate(0deg); }
          100% { transform: rotate(360deg); }
@@ -174,12 +170,12 @@
    <body>
       <div class="stars"></div>
       <header>
-         <h1>Virus Scan Gateway V 1.0 </h1>
+         <h1>Virus Scan Gateway V1.0 </h1>
       </header>
       <div class="main-content">
       <div class="container">
          <h2>Please use the form below to upload files for scanning.</h2>
-         <form id="uploadForm" action="http://localhost:8080/upload" method="post" enctype="multipart/form-data">
+         <form id="uploadForm" method="post" enctype="multipart/form-data">
             <label for="fileUpload">Select a file to upload:</label>
             <input type="file" id="fileUpload" name="file" required>
             <button type="submit">Upload File</button>
@@ -198,66 +194,72 @@
          <div id="reportResponse"></div>
       </div>
       <script>
- document.addEventListener("DOMContentLoaded", function() {
-      var form = document.getElementById("uploadForm");
-      var responseElement = document.getElementById("response");
-      var spinner = document.querySelector('.loading-spinner');
+        document.addEventListener("DOMContentLoaded", function() {
+            var form = document.getElementById("uploadForm");
+            var baseURL;
+            if (window.location.hostname === 'localhost') {
+                baseURL = 'http://localhost:8080';
+            } else {
+                baseURL = 'https://virusscanapi.lat';
+            }
+            form.action = baseURL + '/upload';
 
-      form.onsubmit = function(event) {
-          event.preventDefault();
-          spinner.classList.remove('hidden');
+            var responseElement = document.getElementById("response");
+            var spinner = document.querySelector('.loading-spinner');
 
-          responseElement.textContent = '';
-          var formData = new FormData(form);
-          var xhr = new XMLHttpRequest();
-          xhr.open("POST", form.action, true);
+            form.onsubmit = function(event) {
+                event.preventDefault();
+                spinner.classList.remove('hidden');
+                responseElement.textContent = '';
+                var formData = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", form.action, true);
 
-          xhr.onload = function () {
-              spinner.classList.add('hidden');
-              if (xhr.status === 200) {
+                xhr.onload = function () {
+                    spinner.classList.add('hidden');
+                    if (xhr.status === 200) {
+                        responseElement.textContent = xhr.responseText;
+                    } else {
+                        responseElement.textContent = "Error: " + xhr.statusText;
+                    }
+                };
 
-                  responseElement.textContent = xhr.responseText;
-              } else {
-                  responseElement.textContent = "Error: " + xhr.statusText;
-              }
-          };
+                xhr.onerror = function () {
+                    spinner.classList.add('hidden');
+                    responseElement.textContent = "Error during the request.";
+                };
 
-          xhr.onerror = function () {
-              spinner.classList.add('hidden');
-              responseElement.textContent = "Error during the request.";
-          };
+                xhr.send(formData);
+            };
 
-          xhr.send(formData);
-      };
+            // Function to handle report retrieval
+            window.retrieveReport = function() {
+                var shaInput = document.getElementById("shaInput");
+                var reportResponse = document.getElementById("reportResponse");
+                var spinner2 = document.querySelector('.loading-spinner-2');
+                var xhr = new XMLHttpRequest();
+                spinner2.classList.remove('hidden');
+                reportResponse.textContent = '';
+                xhr.open("GET", baseURL + "/reports/" + shaInput.value, true);
 
-             window.retrieveReport = function() {
-                 var shaInput = document.getElementById("shaInput");
-                 var reportResponse = document.getElementById("reportResponse");
-                 var spinner2 = document.querySelector('.loading-spinner-2');
-                 var xhr = new XMLHttpRequest();
-                 spinner2.classList.remove('hidden');
-                 reportResponse.textContent = '';
-                 xhr.open("GET", "http://localhost:8080/getbyID/" + shaInput.value, true);
-
-                 xhr.onload = function () {
+                xhr.onload = function () {
                     spinner2.classList.add('hidden');
-                     if (xhr.status === 200) {
+                    if (xhr.status === 200) {
+                        reportResponse.textContent = "Report: " + xhr.responseText;
+                    } else {
+                        reportResponse.textContent = "Error: " + xhr.statusText;
+                    }
+                };
 
-                         reportResponse.textContent = "Report: " + xhr.responseText;
-                     } else {
-                         reportResponse.textContent = "Error: " + xhr.statusText;
-                     }
-                 };
-
-                 xhr.onerror = function () {
+                xhr.onerror = function () {
                     spinner2.classList.add('hidden');
-                     reportResponse.textContent = "Error during the request.";
-                 };
+                    reportResponse.textContent = "Error during the request.";
+                };
 
-                 xhr.send();
-             };
-         });
-      </script>
+                xhr.send();
+            };
+        });
+    </script>
       <footer>
          <p>&copy; Built by Visshal</p>
       </footer>
