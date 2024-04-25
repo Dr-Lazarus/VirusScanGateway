@@ -13,11 +13,11 @@ type Config struct {
 
 func Load() *Config {
 
-	if os.Getenv("APP_ENV") == "DEV" {
-		if err := godotenv.Load(".env.dev"); err != nil {
-			log.Fatal("Error loading .env.dev file")
-		}
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("Error loading .env file")
 	}
+	log.Println("[DEBUG] Environment URL: ", os.Getenv("DATABASE_URL"))
+	log.Println("[DEBUG] Database URL: ", os.Getenv("DATABASE_URL"))
 	return &Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
 	}
