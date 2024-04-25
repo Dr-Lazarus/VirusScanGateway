@@ -20,9 +20,17 @@
 # Go workspace file
 go.work
 
-# Env Files
-.env.dev
-.env.prod
+# Env File
+.env
 
 # Test
 test
+
+# Private SSH Key
+VirusScanAPI.pem
+
+# Binary Executable
+server
+
+# env
+env/
