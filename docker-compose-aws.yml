@@ -7,5 +7,5 @@ services:
       - "8080:8080"
       - "80:80"
       - "443:443"
-
-
+    # Override the CMD from Dockerfile if needed
+    command: ["bash"]  # Un-comment this line to start in bash mode

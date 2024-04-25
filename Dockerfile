@@ -2,12 +2,18 @@ FROM golang:latest
 
 WORKDIR /app
 
+# Copy the application files
 COPY . .
 
-COPY /home/ec2-user/VirusScanGateway/certs/virusscanapi.lat-ssl-bundle /etc/ssl/certs
-
+# Download Go modules
 RUN go mod download
 
-EXPOSE 8080
+# Expose necessary ports
+EXPOSE 8080 80 443
 
+# Use an entrypoint script to decide at runtime what to do
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["go", "run", "./cmd/server/main.go"]
