@@ -15,3 +15,4 @@ services:
     volumes:
       - /home/ec2-user/Cloudsine/VirusScanGateway/ssl/certs/domain.cert.pem:/app/ssl/certs/domain.cert.pem:ro
       - /home/ec2-user/Cloudsine/VirusScanGateway/ssl/certs/private.key.pem:/app/ssl/certs/private.key.pem:ro
+      - /home/ec2-user/Cloudsine/VirusScanGateway/.env:/app/.env:ro
