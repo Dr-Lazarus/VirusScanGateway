@@ -2,7 +2,7 @@ FROM golang:latest
 
 WORKDIR /app
 
-# Copy the application files
+
 COPY . .
 
 
