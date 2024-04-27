@@ -33,6 +33,7 @@ func main() {
 
 		sslCert := os.Getenv("SSL_CERT_PATH")
 		sslKey := os.Getenv("SSL_KEY_PATH")
+		log.Println("[DEBUG]")
 
 		if sslCert == "" || sslKey == "" {
 			log.Fatal("❌ SSL certificate or key file path not set")
