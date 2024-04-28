@@ -1,4 +1,4 @@
-name: Go App CI/CD for Non-Main Branches
+name: Dockerise and Test Web App
 
 on:
   push:
