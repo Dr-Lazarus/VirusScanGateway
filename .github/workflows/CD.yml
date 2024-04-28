@@ -46,3 +46,19 @@ jobs:
             sudo docker-compose up -d
             sudo docker container prune -f
             sudo docker image prune -f
+      - name: Wait for App to be Ready
+        run: |
+          counter=0
+          while ! curl -s https://13.215.8.30/
+          do
+            counter=$((counter+1))
+            if [ $counter -gt 30 ]
+            then
+              echo "Failed to connect to app after 30 attempts."
+              # Perform any additional cleanup or logging here
+              exit 1
+            fi
+            echo "Waiting for app to be ready..."
+            sleep 10
+          done
+          echo "Connected to app successfully."
