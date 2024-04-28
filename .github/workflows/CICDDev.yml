@@ -38,7 +38,12 @@ jobs:
             sleep 10
           done
           echo "Connected to app successfully."
-
+      - name: Show PWD and list files
+        run: |
+          echo "Current Working Directory:"
+          pwd
+          echo "Listing Files in Current Directory:"
+          ls -l
       - name: Run tests
         run: go test -v ./servertest
 
