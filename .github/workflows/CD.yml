@@ -49,7 +49,7 @@ jobs:
       - name: Wait for App to be Ready
         run: |
           counter=0
-          while ! curl -s https://13.215.8.30/
+          while ! curl -s https://virusscanapi.lat/
           do
             counter=$((counter+1))
             if [ $counter -gt 30 ]
