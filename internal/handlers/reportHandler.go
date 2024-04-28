@@ -44,11 +44,9 @@ func getReportHandler(c *gin.Context, dbConn *sql.DB) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data": gin.H{
-			"report":           report,
-			"processingStatus": processingStatus,
-		},
+		"success":          true,
+		"processingStatus": processingStatus,
+		"report":           report,
 	})
 }
 

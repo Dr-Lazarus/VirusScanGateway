@@ -42,8 +42,9 @@ func analysisHandler(analysisURL, apiKey string) (string, error) {
 	if err := json.Unmarshal(respBody, &result); err != nil {
 		return "", fmt.Errorf("failed to parse response: %v", err)
 	}
-	log.Println("Response:", result.Data.Links)
+	log.Println("[INFO] Response:", result.Data.Links)
 	sha256 := result.Meta.FileInfo.SHA256
+	log.Println("[INFO] SHA256:", result.Meta.FileInfo.SHA256)
 
 	return sha256, nil
 }

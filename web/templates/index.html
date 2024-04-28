@@ -198,7 +198,7 @@
             var form = document.getElementById("uploadForm");
             var baseURL;
             if (window.location.hostname === 'localhost') {
-                baseURL = 'http://localhost:8080';
+                baseURL = 'http://127.0.0.1:8080';
             } else {
                 baseURL = 'https://virusscanapi.lat';
             }
@@ -220,13 +220,13 @@
                     if (xhr.status === 200) {
                         responseElement.textContent = xhr.responseText;
                     } else {
-                        responseElement.textContent = "Error: " + xhr.statusText;
+                        responseElement.textContent = "Error: Please Upload Again ";
                     }
                 };
 
                 xhr.onerror = function () {
                     spinner.classList.add('hidden');
-                    responseElement.textContent = "Error during the request.";
+                    responseElement.textContent = "Error: Please Upload Again";
                 };
 
                 xhr.send(formData);

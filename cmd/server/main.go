@@ -13,12 +13,12 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	config.Load()
 
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware())
 
-	dbConn := db.SetupDatabase(cfg)
+	dbConn := db.SetupDatabase()
 	defer dbConn.Close()
 
 	handlers.RegisterRoutes(router, dbConn)

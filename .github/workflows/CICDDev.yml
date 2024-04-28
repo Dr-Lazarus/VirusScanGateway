@@ -1,0 +1,58 @@
+name: Go App CI/CD for Non-Main Branches
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.21.4"
+      - name: Build and run Docker container
+        run: |
+          docker-compose -f docker-compose-dev-CICD.yml build
+          docker-compose -f docker-compose-dev-CICD.yml up -d
+      - name: Wait for App to be Ready
+        run: |
+          counter=0
+          while ! curl -s localhost:8080/
+          do
+            counter=$((counter+1))
+            if [ $counter -gt 30 ]
+            then
+              echo "Failed to connect to app after 30 attempts."
+              exit 1
+            fi
+            echo "Waiting for app to be ready..."
+            sleep 10
+          done
+          echo "Connected to app successfully."
+      - name: Show PWD and list files
+        run: |
+          echo "Current Working Directory:"
+          pwd
+          echo "Listing Files in Current Directory:"
+          ls -l
+      - name: Run tests
+        run: go test -v ./servertest
+
+      - name: Cleanup Docker
+        run: |
+          docker-compose -f docker-compose-dev-CICD.yml down -v
+          docker container prune -f
+          docker image prune -f
+
+      - name: Check test results
+        if: ${{ failure() }}
+        run: exit 1
