@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "README.md"
+      - "*.sh"
 
 jobs:
   build_and_push:
