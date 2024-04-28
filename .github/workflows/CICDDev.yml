@@ -23,7 +23,13 @@ jobs:
         run: |
           docker-compose -f docker-compose-dev-CICD.yml build
           docker-compose -f docker-compose-dev-CICD.yml up -d
-
+      - name: Wait for App to be Ready
+        run: |
+          for i in {1..30}; do
+            nc -z localhost 8080 && break
+            echo "Waiting for app to be ready..."
+            sleep 1
+          done
       - name: Run tests
         run: go test -v ./servertest
 
