@@ -32,7 +32,7 @@ func TestHomePage(t *testing.T) {
 		t.Fatalf("Failed to read response body: %s", err)
 	}
 
-	expected, err := os.ReadFile("/home/runner/work/VirusScanGateway/VirusScanGateway/index.html")
+	expected, err := os.ReadFile("/home/runner/work/VirusScanGateway/VirusScanGateway/web/templates/index.html")
 	if err != nil {
 		t.Fatalf("Failed to read expected file: %s", err)
 	}
