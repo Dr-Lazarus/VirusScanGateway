@@ -26,10 +26,18 @@ jobs:
       - name: Wait for App to be Ready
         run: |
           for i in {1..30}; do
-            nc -z localhost 8080 && break
-            echo "Waiting for app to be ready..."
-            sleep 1
+            response=$(curl -s -o response.txt -w "%{http_code}" localhost:8080/)
+            echo "HTTP Status: $response"
+            if [ "$response" -eq 200 ]; then
+              echo "App is up and running. Response:"
+              cat response.txt
+              break
+            else
+              echo "Waiting for app to be ready..."
+              sleep 10
+            fi
           done
+
       - name: Run tests
         run: go test -v ./servertest
 
