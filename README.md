@@ -4,20 +4,21 @@ VirusScanGateway is a Go-based web server designed to facilitate the secure uplo
 
 ## Features
 
-- File upload and secure storage.
+- File upload and secure storage of results in PostGre SQL DB.
 - Real-time virus and malware scanning using VirusTotal API.
-- Persistent results storage with PostgreSQL.
-- Dockerized environment for easy setup and deployment.
+- Hosted on EC2 with custom domain: www.virusscanapi.lat
+- Domain secured with HTTPs.
+- Connected to AWS RDS.
+- CI/CD Pipeline Production: Commits to Main will be automatically deployed to AWS EC2 Container.
+- CI/CD Pipeline Development: Commits (Non-Main) and PRs will be automatically tested in a custom testing environment.
+- Comprehensive Integration testing suite to test endpoints.
+- AWS Secrets Manager to manage production environment key-value pairs.
+- AWS Route 53 to provide authoritative NS and a hosted DNS Zone for www.virusscanapi.lat
 
-## Prerequisites
+## AWS Cloud Architecture
 
-Before you begin, ensure you have met the following requirements:
 
-- You have installed Docker and Docker Compose.
-- You have a VirusTotal API key. If you don't have one, you can register for an API key at [VirusTotal](https://www.virustotal.com/gui/join-us).
-
-## Installation
-
+## How to develop
 To install VirusScanGateway, follow these steps:
 
 1. Clone the repository:
@@ -27,19 +28,33 @@ git clone https://github.com/yourusername/VirusScanGateway.git
 cd VirusScanGateway
 ```
 
-2. Create a `.env.dev` file in the root directory with the following content, replacing `your_virustotal_api_key` with your actual API key:
+2. Start your PostGreSQL Instance on Local
+3. Modify .env.dev file to comment CI/CD and uncomment local
+```plaintext
+# DEV ENVIRONMENT (LOCAL) 
+ DATABASE_URL=postgres://cloudsine:password@host.docker.internal:5432/VirusScanGatewayDB?sslmode=disable
+ VIRUSTOTAL_API_KEY=Your-Test-API-Key
+ ENVIRONMENT=DEV
 
-```env
-DATABASE_URL=postgres://cloudsine:password@localhost:5432/VirusScanGatewayDB?sslmode=disable
-APP_ENV=DEV
-VIRUSTOTAL_API_KEY=your_virustotal_api_key
+# DEV ENVIRONMENT (CI/CD)
+DATABASE_URL=postgresql://postgres:password@db:5432/postgres?sslmode=disable
+VIRUSTOTAL_API_KEY=Your-Test-API-Key
+ENVIRONMENT=DEV
 ```
-
-3. Build and run the application using Docker Compose:
-
+5. Run the container:
 ```bash
-docker-compose up --build
+docker-compose -f docker-compose-dev-local.yml build
+docker-compose -f docker-compose-dev-local.yml up
 ```
+5. Server started on localhost:8080
+
+## Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+- You have installed Docker and Docker Compose.
+- You have a VirusTotal API key. If you don't have one, you can register for an API key at [VirusTotal](https://www.virustotal.com/gui/join-us).
+
 
 ## Usage
 
