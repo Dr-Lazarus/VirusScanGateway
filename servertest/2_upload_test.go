@@ -50,7 +50,7 @@ func TestUploadMultipleFiles(t *testing.T) {
 			part.Write(fileData)
 			writer.Close()
 
-			req, err := http.NewRequest("POST", "http://localhost:8080/upload", body)
+			req, err := http.NewRequest("POST", "http://127.0.0.1:8080/upload", body)
 			if err != nil {
 				t.Fatalf("Failed to create POST request: %s", err)
 			}

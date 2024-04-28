@@ -48,7 +48,7 @@ func TestGetAndDeleteReportBySHA256(t *testing.T) {
 
 func deleteReportBySHA256(t *testing.T, sha256 string) bool {
 	client := &http.Client{}
-	req, err := http.NewRequest("DELETE", "http://localhost:8080/reports/"+sha256, nil)
+	req, err := http.NewRequest("DELETE", "http://127.0.0.1:8080/reports/"+sha256, nil)
 	if err != nil {
 		t.Fatalf("Failed to create DELETE request: %s", err)
 		return false
@@ -88,7 +88,7 @@ func deleteReportBySHA256(t *testing.T, sha256 string) bool {
 
 func getReportBySHA256(t *testing.T, sha256 string) bool {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://localhost:8080/reports/"+sha256, nil)
+	req, err := http.NewRequest("GET", "http://127.0.0.1:8080/reports/"+sha256, nil)
 	if err != nil {
 		t.Fatalf("Failed to create GET request: %s", err)
 		return false

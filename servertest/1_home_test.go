@@ -14,7 +14,7 @@ func TestHomePage(t *testing.T) {
 	passedChecks := 0
 	totalChecks := 2 // Update this if you add more checks
 
-	resp, err := http.Get("http://localhost:8080/")
+	resp, err := http.Get("http://127.0.0.1:8080/")
 	if err != nil {
 		t.Fatalf("Failed to make GET request to the home page: %s", err)
 	}
@@ -32,7 +32,7 @@ func TestHomePage(t *testing.T) {
 		t.Fatalf("Failed to read response body: %s", err)
 	}
 
-	expected, err := os.ReadFile("/Users/visshal/Cloudsine/VirusScanGateway/web/templates/index.html")
+	expected, err := os.ReadFile("/app/web/templates/index.html")
 	if err != nil {
 		t.Fatalf("Failed to read expected file: %s", err)
 	}
