@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: notdrlazarus/virusscanapidev:latest
+    container_name: "virusscanapidev-container"
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    restart: always
+

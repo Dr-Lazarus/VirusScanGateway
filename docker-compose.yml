@@ -17,7 +17,5 @@ services:
       - /home/ec2-user/Cloudsine/VirusScanGateway/ssl/certs/private.key.pem:/app/ssl/certs/private.key.pem:ro
     environment:
       - ENVIRONMENT=PROD
-    # environment: # Uncomment for DEV Environment
-    #   - ENVIRONMENT=DEV
 
 

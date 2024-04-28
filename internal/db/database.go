@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log"
+	"os"
 	"time"
 
-	"github.com/Dr-Lazarus/VirusScanGateway/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -30,8 +30,9 @@ type VirusTotalReport struct {
 	LastAnalysisResults  json.RawMessage `json:"last_analysis_results"`
 }
 
-func SetupDatabase(cfg *config.Config) *sql.DB {
-	db, err := sql.Open("postgres", cfg.DatabaseURL)
+func SetupDatabase() *sql.DB {
+	var databaseURL = os.Getenv("DATABASE_URL")
+	db, err := sql.Open("postgres", databaseURL)
 	if err != nil {
 		log.Fatalf("❌ Error connecting to the database: %v", err)
 	}
@@ -41,7 +42,7 @@ func SetupDatabase(cfg *config.Config) *sql.DB {
 	}
 
 	log.Println("✅ Successfully connected to the database.")
-	runMigrations(cfg.DatabaseURL)
+	runMigrations(databaseURL)
 
 	return db
 }

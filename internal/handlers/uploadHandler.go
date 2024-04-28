@@ -13,7 +13,6 @@ import (
 	"github.com/Dr-Lazarus/VirusScanGateway/internal/db"
 	vt "github.com/VirusTotal/vt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 var (
@@ -28,14 +27,6 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		log.Println("❌ Error: Method not allowed")
 		c.String(http.StatusMethodNotAllowed, "Unsupported method")
 		return
-	}
-
-	if os.Getenv("APP_ENV") == "DEV" {
-		if err := godotenv.Load(".env.dev"); err != nil {
-			log.Printf("❌ Error loading .env.dev file: %v", err)
-			c.String(http.StatusInternalServerError, "❌ Error loading .env.dev file")
-			return
-		}
 	}
 
 	apiKey := os.Getenv("VIRUSTOTAL_API_KEY")
@@ -68,29 +59,21 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 	}
 	reportSQL, err := db.GetReport(dbConn, sha256)
 	if err != nil && err != sql.ErrNoRows {
-		// Handle errors other than "no rows found"
 		log.Printf("❌ Error checking for existing report: %v", err)
 		c.String(http.StatusInternalServerError, "❌ Error checking for existing report")
 		return
 	}
 
 	if err == nil {
-		if len(reportSQL.LastAnalysisResults) == 0 || string(reportSQL.LastAnalysisResults) == "{}" {
-			message := fmt.Sprintf("Report exists in DB but is not yet processed. Please use SHA256 ID to retreive report. SHA256 ID: %s", sha256)
+		if len(reportSQL.LastAnalysisResults) != 0 && string(reportSQL.LastAnalysisResults) != "{}" {
+			message := "Report already present in DB. Please use SHA256 ID to retreive report."
 			c.JSON(http.StatusOK, gin.H{
 				"success": true,
 				"message": message,
 				"sha256":  sha256,
 			})
-		} else {
-			message := fmt.Sprintf("Report already present in DB. Please use SHA256 ID to retreive report. SHA256 ID: %s", sha256)
-			c.JSON(http.StatusOK, gin.H{
-				"success": true,
-				"message": message,
-				"sha256":  sha256,
-			})
+			return
 		}
-		return
 	}
 
 	client := vt.NewClient(apiKey)
@@ -115,19 +98,19 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		if err == sql.ErrNoRows {
 			err = db.InsertReport(dbConn, report)
 			if err != nil {
-				log.Printf("Failed to insert report: %v", err)
+				log.Printf("❌ Failed to insert report: %v", err)
 				c.String(http.StatusInternalServerError, "Failed to insert report")
 				return
 			}
 		} else {
 			log.Printf("❌ Error checking for existing report: %v", err)
-			c.String(http.StatusInternalServerError, "❌ Error checking for existing report")
+			c.String(http.StatusInternalServerError, "Error checking for existing report")
 			return
 		}
 	} else {
 		err = db.UpdateReport(dbConn, report)
 		if err != nil {
-			log.Printf("Failed to update report: %v", err)
+			log.Printf("❌ Failed to update report: %v", err)
 			c.String(http.StatusInternalServerError, "Failed to update report")
 			return
 		}
@@ -137,6 +120,7 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		if processing[sha256] {
 			mu.Unlock()
 			c.JSON(http.StatusOK, gin.H{
+				"success": true,
 				"message": "Please Hold 🫷. Your file is still being processed.",
 				"sha256":  sha256,
 			})
@@ -148,14 +132,15 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		go backgroundWorker(dbConn, apiKey, sha256)
 	}
 
-	message := fmt.Sprintf(
-		"The file has been uploaded and is now being processed by the Virus Total API.\n"+
-			"Please allow some time for the analysis to complete.\n"+
-			"You can check the status of the report using the provided SHA256 ID: %s\n",
-		sha256,
-	)
+	message := fmt.Sprintf("The file has been uploaded and is now being processed by the Virus Total API." +
+		"Please allow some time for the analysis to complete." +
+		"You can check the status of the report using the provided SHA256 ID.")
 
-	c.String(http.StatusOK, message)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": message,
+		"sha256":  sha256,
+	})
 
 }
 
@@ -178,12 +163,12 @@ func backgroundWorker(dbConn *sql.DB, apiKey, sha256 string) {
 		case <-ticker.C:
 			vtFile, err := client.GetObject(vt.URL("files/%s", sha256))
 			if err != nil {
-				log.Printf("Failed to retrieve file details: %v", err)
+				log.Printf("❌ Failed to retrieve file details: %v", err)
 				continue
 			}
 			report, err := ConvertToVirusTotalReport(vtFile)
 			if err != nil {
-				log.Printf("Failed to convert virus total report: %v", err)
+				log.Printf("❌ Failed to convert virus total report: %v", err)
 				continue
 			}
 
@@ -199,7 +184,7 @@ func backgroundWorker(dbConn *sql.DB, apiKey, sha256 string) {
 
 			err = db.UpdateReport(dbConn, report)
 			if err != nil {
-				log.Printf("Failed to update report: %v", err)
+				log.Printf("❌ Failed to update report: %v", err)
 				continue
 			}
 

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: notdrlazarus/virusscanapidev:latest
+    container_name: "virusscanapidev-container"
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - virusscan_network
+
+  db:
+    image: postgres:latest
+    container_name: "virusscandbdev-container"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    networks:
+      - virusscan_network
+
+networks:
+  virusscan_network:
+    driver: bridge

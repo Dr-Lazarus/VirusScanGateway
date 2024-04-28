@@ -12,36 +12,29 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config holds all configuration for our application
 type Config struct {
 	DatabaseURL string
 }
 
-func Load() *Config {
+func Load() {
 	if os.Getenv("ENVIRONMENT") == "PROD" {
-		return loadFromSecretsManager()
+		loadFromSecretsManager()
 	} else {
-		return loadFromDotEnv()
+		loadFromDotEnv()
 	}
 }
 
-// loadFromDotEnv loads environment variables from a .env file
-func loadFromDotEnv() *Config {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("Error loading .env file: ", err)
+func loadFromDotEnv() {
+	if err := godotenv.Load(".env.dev"); err != nil {
+		log.Fatal("Error loading .env.dev file: ", err)
 	}
 	log.Println("[DEBUG] Database URL: ", os.Getenv("DATABASE_URL"))
-	return &Config{
-		DatabaseURL: os.Getenv("DATABASE_URL"),
-	}
 }
 
-// loadFromSecretsManager fetches configuration from AWS Secrets Manager
-func loadFromSecretsManager() *Config {
-	secretName := "ProdEnv"    // Specify your secret name here
-	region := "ap-southeast-1" // Specify the AWS region here
+func loadFromSecretsManager() {
+	secretName := "ProdEnv"
+	region := "ap-southeast-1"
 
-	// Load AWS configuration
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
 		log.Fatal("Unable to load AWS SDK config: ", err)
@@ -69,15 +62,5 @@ func loadFromSecretsManager() *Config {
 			log.Fatalf("Failed to set environment variable %s, %v", key, err)
 		}
 		log.Printf("[DEBUG] Set environment variable %s: %s", key, os.Getenv(key))
-	}
-
-	dbURL, exists := secretData["DATABASE_URL"]
-	if !exists {
-		log.Fatal("DATABASE_URL not found in secrets manager")
-	}
-
-	log.Println("[DEBUG] Database URL from AWS Secrets Manager: ", dbURL)
-	return &Config{
-		DatabaseURL: dbURL,
 	}
 }

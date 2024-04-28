@@ -220,13 +220,13 @@
                     if (xhr.status === 200) {
                         responseElement.textContent = xhr.responseText;
                     } else {
-                        responseElement.textContent = "Error: " + xhr.statusText;
+                        responseElement.textContent = "Error: Please Upload Again ";
                     }
                 };
 
                 xhr.onerror = function () {
                     spinner.classList.add('hidden');
-                    responseElement.textContent = "Error during the request.";
+                    responseElement.textContent = "Error: Please Upload Again";
                 };
 
                 xhr.send(formData);

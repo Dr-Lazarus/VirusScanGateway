@@ -20,8 +20,7 @@
 # Go workspace file
 go.work
 
-# Env File
-.env
+
 
 # Test
 test
@@ -31,9 +30,6 @@ VirusScanAPI.pem
 
 # Binary Executable
 server
-
-# env
-env/
 
 # VS Code
 .vscode
