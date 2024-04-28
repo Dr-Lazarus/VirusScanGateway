@@ -15,7 +15,7 @@ import (
 )
 
 func TestUploadMultipleFiles(t *testing.T) {
-	dirPath := "/Users/visshal/Cloudsine/VirusScanGateway/test_files"
+	dirPath := "/app/test_files"
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
