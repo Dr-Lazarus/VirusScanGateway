@@ -7,17 +7,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/Dr-Lazarus/VirusScanGateway/internal/db"
 	vt "github.com/VirusTotal/vt-go"
 	"github.com/gin-gonic/gin"
-)
-
-var (
-	processing = make(map[string]bool)
-	mu         sync.Mutex
 )
 
 func uploadHandler(c *gin.Context, dbConn *sql.DB) {
@@ -73,6 +67,13 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 				"sha256":  sha256,
 			})
 			return
+		} else if (len(reportSQL.LastAnalysisResults) == 0 || string(reportSQL.LastAnalysisResults) == "{}") && IsProcessing(sha256) {
+			c.JSON(http.StatusOK, gin.H{
+				"success": true,
+				"message": "Please Hold 🫷. Your file is still being processed.",
+				"sha256":  sha256,
+			})
+			return
 		}
 	}
 
@@ -116,19 +117,7 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		}
 	}
 	if len(report.LastAnalysisResults) == 0 || string(report.LastAnalysisResults) == "{}" {
-		mu.Lock()
-		if processing[sha256] {
-			mu.Unlock()
-			c.JSON(http.StatusOK, gin.H{
-				"success": true,
-				"message": "Please Hold 🫷. Your file is still being processed.",
-				"sha256":  sha256,
-			})
-			return
-		}
-
-		processing[sha256] = true
-		mu.Unlock()
+		SetProcessing(sha256, true)
 		go backgroundWorker(dbConn, apiKey, sha256)
 	}
 
@@ -145,11 +134,7 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 }
 
 func backgroundWorker(dbConn *sql.DB, apiKey, sha256 string) {
-	defer func() {
-		mu.Lock()
-		delete(processing, sha256)
-		mu.Unlock()
-	}()
+	defer ClearProcessing(sha256)
 
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()

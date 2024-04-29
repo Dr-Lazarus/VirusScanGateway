@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -15,7 +14,7 @@ import (
 )
 
 func TestUploadMultipleFiles(t *testing.T) {
-	dirPath := "/home/runner/work/VirusScanGateway/VirusScanGateway/test_files"
+	dirPath := "../test_files"
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
@@ -78,9 +77,7 @@ func TestUploadMultipleFiles(t *testing.T) {
 			assert.NotEmpty(t, jsonResponse["sha256"], "Expected a non-empty SHA256 ID for file: "+file.Name())
 
 			message := jsonResponse["message"].(string)
-			log.Println("[DEBUG] Message:", message)
 			_, ok := expectedMessages[message]
-			log.Println("[DEBUG] Expected Message:", expectedMessages[message])
 			assert.True(t, ok, "Received unexpected message for file: "+file.Name()+" - "+message)
 		})
 	}
