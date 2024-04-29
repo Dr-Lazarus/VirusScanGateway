@@ -140,7 +140,6 @@ func backgroundWorker(dbConn *sql.DB, apiKey, sha256 string) {
 	defer ticker.Stop()
 
 	client := vt.NewClient(apiKey)
-	// Initialize the attempt counter
 	attemptCounter := 0
 
 	for {

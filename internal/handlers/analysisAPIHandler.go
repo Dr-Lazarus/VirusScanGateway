@@ -11,7 +11,7 @@ import (
 func makeGetRequest(analysisURL, apiKey string) ([]byte, error) {
 	req, err := http.NewRequest("GET", analysisURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("❌ Error creating request: %v", err)
 	}
 
 	req.Header.Set("x-apikey", apiKey)
@@ -20,13 +20,13 @@ func makeGetRequest(analysisURL, apiKey string) ([]byte, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send the request: %v", err)
+		return nil, fmt.Errorf("❌ Failed to send the request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %v", err)
+		return nil, fmt.Errorf("❌ Failed to read response: %v", err)
 	}
 
 	return respBody, nil
@@ -35,14 +35,14 @@ func makeGetRequest(analysisURL, apiKey string) ([]byte, error) {
 func analysisHandler(analysisURL, apiKey string) (string, error) {
 	respBody, err := makeGetRequest(analysisURL, apiKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to get analysis information: %v", err)
+		return "", fmt.Errorf("❌ Failed to get analysis information: %v", err)
 	}
 
 	var result AnalysisResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return "", fmt.Errorf("failed to parse response: %v", err)
+		return "", fmt.Errorf("❌ Failed to parse response: %v", err)
 	}
-	log.Println("[INFO] Response:", result.Data.Links)
+
 	sha256 := result.Meta.FileInfo.SHA256
 	log.Println("[INFO] SHA256:", result.Meta.FileInfo.SHA256)
 

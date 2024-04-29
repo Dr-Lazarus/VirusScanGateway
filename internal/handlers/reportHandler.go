@@ -24,7 +24,7 @@ func getReportHandler(c *gin.Context, dbConn *sql.DB) {
 				},
 			})
 		} else {
-			log.Printf("Error retrieving report: %v", err)
+			log.Printf("❌ Error retrieving report: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
 				"error": gin.H{
@@ -54,7 +54,6 @@ func deleteReportHandler(c *gin.Context, dbConn *sql.DB) {
 	sha256 := c.Param("SHA256ID")
 	log.Println("SHA256:", sha256)
 
-	// Check if the report exists
 	_, err := db.GetReport(dbConn, sha256)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -66,7 +65,7 @@ func deleteReportHandler(c *gin.Context, dbConn *sql.DB) {
 				},
 			})
 		} else {
-			log.Printf("Error retrieving report: %v", err)
+			log.Printf("❌ Error retrieving report: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
 				"error": gin.H{
@@ -79,7 +78,7 @@ func deleteReportHandler(c *gin.Context, dbConn *sql.DB) {
 	}
 	err = db.DeleteReport(dbConn, sha256)
 	if err != nil {
-		log.Printf("Error deleting report: %v", err)
+		log.Printf("❌ Error deleting report: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error": gin.H{
