@@ -39,14 +39,14 @@ jobs:
           done
           echo "Connected to app successfully."
       - name: Run tests
-        run: go test -v ./servertest
+        run: |
+          if ! go test -v ./servertest; then
+            echo "Go tests failed."
+            exit 1
+          fi
 
       - name: Cleanup Docker
         run: |
           docker-compose -f docker-compose-dev-CICD.yml down -v
           docker container prune -f
           docker image prune -f
-
-      - name: Check test results
-        if: ${{ failure() }}
-        run: exit 1
