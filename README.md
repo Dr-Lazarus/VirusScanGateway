@@ -18,6 +18,7 @@ VirusScanGateway is a Go-based web server designed to facilitate the secure uplo
 - AWS Route 53 to provide authoritative NS and a hosted DNS Zone for www.virusscanapi.lat
 
 ## AWS Cloud Architecture
+![image](https://github.com/Dr-Lazarus/VirusScanGateway/assets/99006087/d7b5929b-671c-4b49-b208-c00988ec255d)
 
 
 ## How to develop
