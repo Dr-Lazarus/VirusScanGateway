@@ -15,7 +15,7 @@ import (
 )
 
 func TestUploadMultipleFiles(t *testing.T) {
-	dirPath := "/home/runner/work/VirusScanGateway/VirusScanGateway/test_files"
+	dirPath := "../test_files"
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
@@ -24,7 +24,7 @@ func TestUploadMultipleFiles(t *testing.T) {
 
 	expectedMessages := map[string]bool{
 		"Report already present in DB. Please use SHA256 ID to retreive report.": true,
-		"The file has been uploaded and is now being processed by the Virus Total API.Please allow some time for the analysis to complete.You can check the status of the report using the provided SHA256 ID.": true,
+		"The file has been uploaded and is now being processed by the Virus Total API. Please allow some time for the analysis to complete. You can check the status of the report using the provided SHA256 ID.": true,
 		"Please Hold 🫷. Your file is still being processed.": true,
 	}
 

@@ -33,7 +33,6 @@ func main() {
 
 		sslCert := os.Getenv("SSL_CERT_PATH")
 		sslKey := os.Getenv("SSL_KEY_PATH")
-		log.Println("[DEBUG]")
 
 		if sslCert == "" || sslKey == "" {
 			log.Fatal("❌ SSL certificate or key file path not set")
@@ -47,7 +46,6 @@ func main() {
 
 			log.Printf("🚀 HTTP server starting on port %s for redirect to HTTPS\n", httpPort)
 			httpRouter := gin.Default()
-			// Redirect all HTTP requests to HTTPS
 			httpRouter.GET("/*any", func(c *gin.Context) {
 				target := "https://" + c.Request.Host + c.Request.URL.Path
 				if len(c.Request.URL.RawQuery) > 0 {
@@ -65,7 +63,6 @@ func main() {
 		if httpPort == "" {
 			httpPort = "8080"
 		}
-
 		log.Printf("🚀 HTTP server starting on port %s in development mode\n", httpPort)
 		log.Fatal(http.ListenAndServe(":"+httpPort, router))
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 )
@@ -46,7 +47,11 @@ func uploadVirusHandler(file io.Reader, filename, apiKey string) (string, error)
 
 	var result map[string]interface{}
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return "", fmt.Errorf("failed to parse response: %v", err)
+		log.Printf("error decoding response: %v", err)
+		if e, ok := err.(*json.SyntaxError); ok {
+			log.Printf("syntax error at byte offset %d", e.Offset)
+		}
+		log.Printf("response: %q", respBody)
 	}
 	if analysisURL, ok := result["data"].(map[string]interface{})["links"].(map[string]interface{})["self"].(string); ok {
 		return analysisURL, nil

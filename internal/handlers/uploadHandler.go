@@ -132,9 +132,7 @@ func uploadHandler(c *gin.Context, dbConn *sql.DB) {
 		go backgroundWorker(dbConn, apiKey, sha256)
 	}
 
-	message := fmt.Sprintf("The file has been uploaded and is now being processed by the Virus Total API." +
-		"Please allow some time for the analysis to complete." +
-		"You can check the status of the report using the provided SHA256 ID.")
+	message := fmt.Sprintf("The file has been uploaded and is now being processed by the Virus Total API. Please allow some time for the analysis to complete. You can check the status of the report using the provided SHA256 ID.")
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

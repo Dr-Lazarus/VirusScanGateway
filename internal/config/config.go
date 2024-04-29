@@ -28,7 +28,6 @@ func loadFromDotEnv() {
 	if err := godotenv.Load(".env.dev"); err != nil {
 		log.Fatal("Error loading .env.dev file: ", err)
 	}
-	log.Println("[DEBUG] Database URL: ", os.Getenv("DATABASE_URL"))
 }
 
 func loadFromSecretsManager() {
@@ -61,6 +60,8 @@ func loadFromSecretsManager() {
 		if err := os.Setenv(key, value); err != nil {
 			log.Fatalf("Failed to set environment variable %s, %v", key, err)
 		}
-		log.Printf("[DEBUG] Set environment variable %s: %s", key, os.Getenv(key))
+		if key != "SSL_CERT_DATA" && key != "SSL_KEY_DATA" {
+			log.Printf("[INFO] Environment variable %s: %s", key, os.Getenv(key))
+		}
 	}
 }
