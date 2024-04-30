@@ -21,6 +21,10 @@ VirusScanGateway is a Go-based web server designed to facilitate the secure uplo
 ![image](https://github.com/Dr-Lazarus/VirusScanGateway/assets/99006087/d7b5929b-671c-4b49-b208-c00988ec255d)
 
 
+## CI - Dev
+- Any commits to non-main branches will trigger a workflow which runs 3 integration tests.
+
+
 ## How to develop
 To install VirusScanGateway, follow these steps:
 
