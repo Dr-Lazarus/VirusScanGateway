@@ -1,3 +1,4 @@
+# **Notice: This project is archived and no longer actively maintained.**
 # VirusScanGateway
 - ![example workflow](https://github.com/Dr-Lazarus/VirusScanGateway/actions/workflows/EC2-container-webapp.yml/badge.svg)
 - ![example workflow](https://github.com/Dr-Lazarus/VirusScanGateway/actions/workflows/Testing-environment.yml/badge.svg)
